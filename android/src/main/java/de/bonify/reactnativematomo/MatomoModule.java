@@ -96,17 +96,55 @@ public class MatomoModule extends ReactContextBaseJavaModule implements Lifecycl
     public void trackCampaign(String name, String keyboard) {}
 
     @ReactMethod
-    public void trackContentImpression(@NonNull String name, @NonNull ReadableMap values) {}
+    public void trackContentImpression(@NonNull String name, @NonNull ReadableMap values) {
+        TrackHelper.ContentImpression contentImpression = getTrackHelper().impression(name);
+        if (values.hasKey("piece") && !values.isNull("piece")) {
+            contentImpression.piece(values.getString("piece"));
+        }
+        if (values.hasKey("target") && !values.isNull("target")) {
+            contentImpression.target(values.getString("target"));
+        }
+        contentImpression.with(mMatomoTracker);
+    }
 
     @ReactMethod
-    public void trackContentInteraction(@NonNull String name, @NonNull ReadableMap values) {}
+    public void trackContentInteraction(@NonNull String name, @NonNull ReadableMap values) {
+        String interaction = null;
+        if (values.hasKey("interaction") && !values.isNull("interaction")) {
+            interaction = values.getString("interaction");
+        }
+        if (interaction == null) {
+            throw new RuntimeException("interaction can't be null");
+        }
+        TrackHelper.ContentInteraction contentInteraction =  getTrackHelper().interaction(name, interaction);
+        if (values.hasKey("piece") && !values.isNull("piece")) {
+            contentInteraction.piece(values.getString("piece"));
+        }
+        if (values.hasKey("target") && !values.isNull("target")) {
+            contentInteraction.target(values.getString("target"));
+
+        }
+
+        contentInteraction.with(mMatomoTracker);
+    }
 
     @ReactMethod
-    public void trackSearch(@NonNull String query, @NonNull ReadableMap values) {}
+    public void trackSearch(@NonNull String query, @NonNull ReadableMap values) {
+        TrackHelper.Search helper = getTrackHelper().search(query);
+        if (values.hasKey("category") && !values.isNull("category")) {
+            helper.category(values.getString("category"));
+        }
+        if (values.hasKey("resultCount") && !values.isNull("resultCount")) {
+            helper.count(values.getInt("resultCount"));
+        }
+
+        mMatomoTracker.track(helper.build());
+
+    }
 
     @ReactMethod
     public void trackAppDownload() {
-        getTrackHelper().track().download().with(mMatomoTracker);
+        getTrackHelper().download().with(mMatomoTracker);
     }
 
     @Override
